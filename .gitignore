@@ -1,0 +1,25 @@
+# vim
+*.swp
+
+# python
+build/
+estimation/__pycache__/
+dist/
+interesting_results/
+optim_compound.egg-info/
+__pycache__/
+results/
+tests/__pycache__/
+tests/*/__pycache__/
+
+# coverage
+.coverage
+
+# data
+old_breizhcrops_dataset/
+breizhcrops_dataset/
+breizhcrops_npy/
+tests_breizhcrops_npy/
+
+# other
+notes/
