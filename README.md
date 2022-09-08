@@ -2,7 +2,7 @@
 
 ![Build](https://github.com/antoinecollas/optim_compound/workflows/tests/badge.svg)
 
-This repository hosts Python code for the numerical experiments of the the associated [coming soon...](https://arxiv.org/).
+This repository hosts Python code for the numerical experiments of the the associated [arXiv paper](https://arxiv.org/abs/2209.03315).
 
 
 ## Installation
@@ -37,12 +37,10 @@ python estimation/speed_comparison.py
 If you use this code please cite:
 
 ```
-@misc{collas2022compound,
-      title={...}, 
-      author={...},
-      year={2022},
-      eprint={...},
-      archivePrefix={arXiv},
-      primaryClass={...}
+@misc{collas22MSG,
+      title = {Riemannian optimization for non-centered mixture of scaled Gaussian distributions},
+      author = {Collas, Antoine and Breloy, Arnaud and Ren, Chengfang and Ginolhac, Guillaume and Ovarlez, Jean-Philippe},
+      year = {2022},
+      url = {https://arxiv.org/abs/2209.03315}
 }
 ```
