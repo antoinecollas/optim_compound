@@ -2,7 +2,7 @@
 
 ![Build](https://github.com/antoinecollas/optim_compound/workflows/tests/badge.svg)
 
-This repository hosts Python code for the numerical experiments of the the associated [arXiv paper](https://arxiv.org/abs/2209.03315).
+This repository hosts Python code for the numerical experiments of the the associated [arXiv paper](https://arxiv.org/abs/2209.03315) and relies on the library [pyCovariance](https://github.com/antoinecollas/pyCovariance).
 
 
 ## Installation
