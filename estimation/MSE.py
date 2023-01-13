@@ -23,6 +23,16 @@ import tikzplotlib
 from tqdm import tqdm
 
 
+# define a wrapper that normalizes
+# the covariance matrix once estimated
+def normalize_scatter_matrix(estimator):
+    def _new_estimator(*args, **kwargs):
+        point = list(estimator(*args, **kwargs))
+        point[1] = point[1] / (la.det(point[1])**(1/point[1].shape[0]))
+        return point
+    return _new_estimator
+
+
 def get_M(scatter_use_SPD_dist, p, N):
     if scatter_use_SPD_dist:
         M = (ComplexEuclidean, HermitianPositiveDefinite, ComplexEuclidean)
@@ -43,7 +53,12 @@ def get_M(scatter_use_SPD_dist, p, N):
 def Gaussian(scatter_use_SPD_dist, p=None, N=None):
     name = 'Gaussian'
     M, args_M = get_M(scatter_use_SPD_dist, p, N)
-    return Feature(name, Gaussian_estimation_constrained_texture, M, args_M)
+    return Feature(
+        name,
+        normalize_scatter_matrix(Gaussian_estimation_constrained_texture),
+        M,
+        args_M
+    )
 
 
 @make_feature_prototype
@@ -70,7 +85,12 @@ def Tyler_known_location(mu, iter_max, scatter_use_SPD_dist, p=None, N=None):
         tau = tau / c
         return location, sigma, tau
 
-    return Feature(name, _Tyler, M, args_M)
+    return Feature(
+        name,
+        normalize_scatter_matrix(_Tyler),
+        M,
+        args_M
+    )
 
 
 @make_feature_prototype
@@ -88,7 +108,12 @@ def Tyler_unknown_location(iter_max, scatter_use_SPD_dist, p=None, N=None):
         tau = tau / c
         return mu, sigma, tau
 
-    return Feature(name, _Tyler, M, args_M)
+    return Feature(
+        name,
+        normalize_scatter_matrix(_Tyler),
+        M,
+        args_M
+    )
 
 
 @make_feature_prototype
@@ -125,7 +150,12 @@ def Riemannian_opt(
         )
         return mu, sigma, tau
 
-    return Feature(name, _estimation, M, args_M)
+    return Feature(
+        name,
+        normalize_scatter_matrix(_estimation),
+        M,
+        args_M
+    )
 
 
 def main(
@@ -249,7 +279,7 @@ if __name__ == '__main__':
     n_MC = 2000
     p = 10
     nu = 0.1
-    list_n_samples = np.geomspace(2*p, 100*p, num=10, dtype=int)
+    list_n_samples = np.geomspace(2*p, 1000*p, num=10, dtype=int)
     iter_max = 500
     min_grad_norm = 1e-5
     min_step_size = 1e-10
