@@ -23,13 +23,17 @@ import tikzplotlib
 from tqdm import tqdm
 
 
+def normalize_scatter_matrix(scatter):
+    return scatter / (la.det(scatter)**(1/scatter.shape[-1]))
+
+
 # define a wrapper that normalizes
 # the covariance matrix once estimated
-def normalize_scatter_matrix(estimator):
+def wrapper_normalize_scatter_matrix(estimator):
     def _new_estimator(*args, **kwargs):
         point = list(estimator(*args, **kwargs))
-        point[1] = point[1] / (la.det(point[1])**(1/point[1].shape[0]))
-        return point
+        point[1] = normalize_scatter_matrix(point[1])
+        return tuple(point)
     return _new_estimator
 
 
@@ -55,7 +59,8 @@ def Gaussian(scatter_use_SPD_dist, p=None, N=None):
     M, args_M = get_M(scatter_use_SPD_dist, p, N)
     return Feature(
         name,
-        normalize_scatter_matrix(Gaussian_estimation_constrained_texture),
+        wrapper_normalize_scatter_matrix(
+            Gaussian_estimation_constrained_texture),
         M,
         args_M
     )
@@ -87,7 +92,7 @@ def Tyler_known_location(mu, iter_max, scatter_use_SPD_dist, p=None, N=None):
 
     return Feature(
         name,
-        normalize_scatter_matrix(_Tyler),
+        wrapper_normalize_scatter_matrix(_Tyler),
         M,
         args_M
     )
@@ -110,7 +115,7 @@ def Tyler_unknown_location(iter_max, scatter_use_SPD_dist, p=None, N=None):
 
     return Feature(
         name,
-        normalize_scatter_matrix(_Tyler),
+        wrapper_normalize_scatter_matrix(_Tyler),
         M,
         args_M
     )
@@ -152,7 +157,7 @@ def Riemannian_opt(
 
     return Feature(
         name,
-        normalize_scatter_matrix(_estimation),
+        wrapper_normalize_scatter_matrix(_estimation),
         M,
         args_M
     )
@@ -233,7 +238,11 @@ def main(
         list_n_samples_iterator = tqdm(list_n_samples_iterator)
 
     for i, n in enumerate(list_n_samples_iterator):
-        true_parameters = [mu, sigma, np.ones((n, 1))]
+        true_parameters = [
+            mu,
+            normalize_scatter_matrix(sigma),
+            np.ones((n, 1))
+        ]
         mean_errors[:, :, i] = monte_carlo(
             true_parameters,
             partial(sample_fct, n=n),
@@ -279,7 +288,7 @@ if __name__ == '__main__':
     n_MC = 2000
     p = 10
     nu = 0.1
-    list_n_samples = np.geomspace(2*p, 1000*p, num=10, dtype=int)
+    list_n_samples = np.geomspace(2*p, 100*p, num=10, dtype=int)
     iter_max = 500
     min_grad_norm = 1e-5
     min_step_size = 1e-10
