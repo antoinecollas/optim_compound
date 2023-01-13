@@ -90,7 +90,7 @@ def main(
                         y_test, y_pred,
                         classnames=dataset.classname, verbose=verbose)
                     for key in new_performance_metrics:
-                        if not(key in temp_performance_metrics):
+                        if not (key in temp_performance_metrics):
                             temp_performance_metrics[key] = list()
                         to_append = new_performance_metrics[key]
                         temp_performance_metrics[key].append(to_append)
@@ -102,7 +102,7 @@ def main(
                         print()
 
                 for key in temp_performance_metrics:
-                    if not(key in performance_metrics):
+                    if not (key in performance_metrics):
                         performance_metrics[key] = list()
                     to_append = temp_performance_metrics[key]
                     performance_metrics[key].append(to_append)

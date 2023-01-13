@@ -106,7 +106,7 @@ def main(
             new_performance_metrics = compute_performance_metrics(
                 y_test, y_pred, classnames=dataset.classname, verbose=False)
             for key in new_performance_metrics:
-                if not(key in performance_metrics):
+                if not (key in performance_metrics):
                     init = np.zeros((len(features), len(t_list)))
                     performance_metrics[key] = init
                 performance_metrics[key][i, j] = new_performance_metrics[key]
