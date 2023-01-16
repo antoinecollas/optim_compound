@@ -11,7 +11,6 @@ from pyCovariance.generation_data import\
         generate_covariance,\
         generate_textures_gamma_dist,\
         sample_compound_distribution
-import tikzplotlib
 from tqdm import tqdm
 
 
@@ -26,8 +25,6 @@ def main(
     solvers_IG,
     verbose=True
 ):
-    matplotlib.use('Agg')
-
     if verbose:
         print('\n###########################################################')
         print('### Cost function according to the number of iterations ###')
@@ -94,12 +91,23 @@ def main(
         iterator = reg_types
 
     for reg_type in iterator:
-        folder_reg = os.path.join(folder, reg_type)
-        if not os.path.exists(folder_reg):
-            os.makedirs(folder_reg, exist_ok=True)
+        # prepare plot
+        # two lines for cost fct and grad norm
+        # one column per reg_beta
+        fig = plt.figure(figsize=(8, 3.6))
+        gs = fig.add_gridspec(2, len(reg_betas), hspace=0.1, wspace=0.1)
+        axes_cst_fct, axes_grad_norm = gs.subplots(sharex='col', sharey='row')
+        YLABEL_COORDS = (-0.3, 0.5)
 
-        for reg_beta in reg_betas:
-            reg_beta_str = str(reg_beta).replace('.', '_')
+        for k, (ax_cst_fct, ax_grad_norm, reg_beta) in enumerate(
+                zip(axes_cst_fct, axes_grad_norm, reg_betas)):
+            # each element of axes_cst_fct has a linear scale
+            # until THRESHOLD_LINEAR and a log scale after
+            THRESHOLD_LINEAR = 1e-3
+            ax_cst_fct.set_xscale('symlog', linthresh=THRESHOLD_LINEAR)
+            ax_cst_fct.set_yscale('log')
+            ax_grad_norm.set_xscale('symlog', linthresh=THRESHOLD_LINEAR)
+            ax_grad_norm.set_yscale('log')
 
             # estimation
             res = list()
@@ -121,50 +129,54 @@ def main(
                 to_plot_x = res[i]['iterations']['time']
                 to_plot_x -= np.min(to_plot_x)
                 to_plot_y = res[i]['iterations']['f(x)'] - min_value + 1
-                plt.plot(to_plot_x, to_plot_y, label=s, marker='')
-                plt.xscale('symlog', linthresh=to_plot_x[1])
-                plt.yscale('log')
+                ax_cst_fct.plot(
+                    to_plot_x, to_plot_y, label='plain '+s, marker='')
             for i, s in enumerate(solvers_IG):
                 to_plot_x = res_IG[i]['iterations']['time']
                 to_plot_x -= np.min(to_plot_x)
                 to_plot_y = res_IG[i]['iterations']['f(x)'] - min_value + 1
-                plt.plot(to_plot_x, to_plot_y, label=s+' IG', marker='')
-                plt.xscale('symlog', linthresh=to_plot_x[1])
-                plt.yscale('log')
-            plt.legend()
-            plt.xlabel('Time (s)')
-            plt.ylabel('Negative log-likelihood')
-            plt.grid(visible=False, which='both')
-            filename = 'time_likelihood_beta_' + reg_beta_str
-            path_temp = os.path.join(folder_reg, filename)
-            plt.savefig(path_temp)
-            tikzplotlib.save(path_temp + '.tex')
-            plt.close('all')
+                ax_cst_fct.plot(
+                    to_plot_x, to_plot_y, label='proposed algo.', marker='')
+            if k == 0:
+                # small font of legend
+                ax_cst_fct.legend(fontsize=6, loc='upper right')
+                ax_cst_fct.yaxis.set_label_coords(*YLABEL_COORDS)
+                ax_cst_fct.set_ylabel('Regularized NLL')
+            # remove scientific notation from yaxis of ax_cst_fct
+            ticker = matplotlib.ticker.StrMethodFormatter('{x:.0f}')
+            ax_cst_fct.yaxis.set_minor_formatter(ticker)
+            ax_cst_fct.yaxis.set_major_formatter(ticker)
+
+            if reg_beta == 0:
+                ax_cst_fct.set_title(r'$\beta = 0$')
+            else:
+                ax_cst_fct.set_title(
+                    r'$\beta = 10^{' + str(int(np.log10(reg_beta))) + '}$')
+            ax_cst_fct.grid(visible=True, which='both')
 
             # plot grad norm vs iterations
             for i, s in enumerate(solvers):
                 to_plot_x = res[i]['iterations']['time']
                 to_plot_x -= np.min(to_plot_x)
                 to_plot_y = res[i]['iterations']['gradnorm']
-                plt.plot(to_plot_x, to_plot_y, label=s, marker='')
-                plt.xscale('symlog', linthresh=to_plot_x[1])
-                plt.yscale('log')
+                ax_grad_norm.plot(
+                    to_plot_x, to_plot_y, label='plain '+s, marker='')
             for i, s in enumerate(solvers_IG):
                 to_plot_x = res_IG[i]['iterations']['time']
                 to_plot_x -= np.min(to_plot_x)
                 to_plot_y = res_IG[i]['iterations']['gradnorm']
-                plt.plot(to_plot_x, to_plot_y, label=s+' IG', marker='')
-                plt.xscale('symlog', linthresh=to_plot_x[1])
-                plt.yscale('log')
-            plt.legend()
-            plt.xlabel('Time (s)')
-            plt.ylabel('Gradient norm')
-            plt.grid(visible=False, which='both')
-            filename = 'time_gradnorm_likelihood_beta_' + reg_beta_str
-            path_temp = os.path.join(folder_reg, filename)
-            plt.savefig(path_temp)
-            tikzplotlib.save(path_temp + '.tex')
-            plt.close('all')
+                ax_grad_norm.plot(
+                    to_plot_x, to_plot_y, label='proposed algo.', marker='')
+            if k == 0:
+                ax_grad_norm.yaxis.set_label_coords(*YLABEL_COORDS)
+                ax_grad_norm.set_ylabel('Gradient norm')
+            ax_grad_norm.set_xlabel('Time (s.)')
+            ax_grad_norm.grid(visible=True, which='major')
+
+        filename = 'likelihood_gradnorm_vs_time_'+reg_type+'.pdf'
+        path_temp = os.path.join(folder, filename)
+        plt.savefig(path_temp, bbox_inches='tight')
+        plt.close('all')
 
 
 if __name__ == '__main__':
