@@ -137,7 +137,7 @@ def main(
         ax_grad_norm.set_xlabel('Iterations')
         ax_grad_norm.grid(visible=True, which='major')
 
-    filename = 'center_of_mass_cost_gradnorm_vs_iterations_.pdf'
+    filename = 'center_of_mass_cost_gradnorm_vs_iterations.pdf'
     path_temp = os.path.join(folder, filename)
     plt.savefig(path_temp, bbox_inches='tight')
     plt.close('all')
