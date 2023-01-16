@@ -138,7 +138,6 @@ def main(
                 ax_cst_fct.plot(
                     to_plot_x, to_plot_y, label='proposed algo.', marker='')
             if k == 0:
-                # small font of legend
                 ax_cst_fct.legend(fontsize=6, loc='upper right')
                 ax_cst_fct.yaxis.set_label_coords(*YLABEL_COORDS)
                 ax_cst_fct.set_ylabel('Regularized NLL')
@@ -146,7 +145,6 @@ def main(
             ticker = matplotlib.ticker.StrMethodFormatter('{x:.0f}')
             ax_cst_fct.yaxis.set_minor_formatter(ticker)
             ax_cst_fct.yaxis.set_major_formatter(ticker)
-
             if reg_beta == 0:
                 ax_cst_fct.set_title(r'$\beta = 0$')
             else:
