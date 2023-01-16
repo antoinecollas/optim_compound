@@ -3,7 +3,7 @@ from center_of_mass.speed_comparison import main
 
 def test_speed_comparison():
     main(
-        Ms=[2],
+        Ms=[2, 4],
         N=4,
         p=3,
         nu=10,
