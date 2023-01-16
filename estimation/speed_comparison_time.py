@@ -95,7 +95,7 @@ def main(
         # two lines for cost fct and grad norm
         # one column per reg_beta
         fig = plt.figure(figsize=(8, 3.6))
-        gs = fig.add_gridspec(2, len(reg_betas), hspace=0.1, wspace=0.1)
+        gs = fig.add_gridspec(2, len(reg_betas), hspace=0.15, wspace=0.1)
         axes_cst_fct, axes_grad_norm = gs.subplots(sharex='col', sharey='row')
         YLABEL_COORDS = (-0.3, 0.5)
 
