@@ -8,7 +8,6 @@ from pyCovariance.features.base import _FeatureArray
 from pyCovariance.generation_data import\
         generate_covariance,\
         generate_textures_gamma_dist
-import tikzplotlib
 from tqdm import tqdm
 
 from center_of_mass.computation import\
@@ -25,8 +24,6 @@ def main(
     solvers_IG,
     verbose=True
 ):
-    matplotlib.use('Agg')
-
     if verbose:
         print('\n###########################################################')
         print('### Cost function according to the number of iterations ###')
@@ -41,12 +38,27 @@ def main(
     folder = os.path.join('center_of_mass')
     folder = create_directory(folder)
 
-    if verbose:
-        iterator = tqdm(Ms)
-    else:
-        iterator = Ms
+    # prepare plot
+    # two lines for cost fct and grad norm
+    # one column per M
+    fig = plt.figure(figsize=(8, 3.6))
+    gs = fig.add_gridspec(2, len(Ms), hspace=0.15, wspace=0.1)
+    axes_cst_fct, axes_grad_norm = gs.subplots(sharex='col', sharey='row')
+    YLABEL_COORDS = (-0.3, 0.5)
+    XTICKS = [1, 10, 100, 1000]
 
-    for M in iterator:
+    if verbose:
+        iterator = enumerate(zip(tqdm(axes_cst_fct), axes_grad_norm, Ms))
+    else:
+        iterator = enumerate(zip(axes_cst_fct, axes_grad_norm, Ms))
+
+    for k, (ax_cst_fct, ax_grad_norm, M) in iterator:
+        # log scale
+        ax_cst_fct.set_xscale('log')
+        ax_cst_fct.set_yscale('log')
+        ax_grad_norm.set_xscale('log')
+        ax_grad_norm.set_yscale('log')
+
         # generate location, scatter matrix, textures
         theta = _FeatureArray((p, 1), (p, p), (N, 1))
         for i in range(M):
@@ -84,41 +96,51 @@ def main(
             tmp = np.min(res_IG[i]['iterations']['f(x)'])
             min_value = np.min([tmp, min_value])
         for i, s in enumerate(solvers):
-            to_plot = res[i]['iterations']['f(x)'] - min_value + 1
-            plt.loglog(np.arange(1, len(to_plot) + 1), to_plot,
-                       label=s, marker='')
+            to_plot_y = res[i]['iterations']['f(x)'] - min_value + 1
+            to_plot_x = np.arange(1, len(to_plot_y) + 1)
+            ax_cst_fct.plot(
+                to_plot_x, to_plot_y, label='plain '+s, marker='')
         for i, s in enumerate(solvers_IG):
-            to_plot = res_IG[i]['iterations']['f(x)'] - min_value + 1
-            plt.loglog(np.arange(1, len(to_plot) + 1), to_plot,
-                       label=s+' IG', marker='')
-        plt.legend()
-        plt.xlabel('Iterations')
-        plt.ylabel('Center of mass - cost function')
-        plt.grid(visible=False, which='both')
-        filename = 'cost_fct_M_' + str(M)
-        path_temp = os.path.join(folder, filename)
-        plt.savefig(path_temp)
-        tikzplotlib.save(path_temp + '.tex')
-        plt.close('all')
+            to_plot_y = res_IG[i]['iterations']['f(x)'] - min_value + 1
+            to_plot_x = np.arange(1, len(to_plot_y) + 1)
+            ax_cst_fct.plot(
+                to_plot_x, to_plot_y, label='proposed algo.', marker='')
+        if k == 0:
+            ax_cst_fct.legend(fontsize=6, loc='upper right')
+            ax_cst_fct.yaxis.set_label_coords(*YLABEL_COORDS)
+            ax_cst_fct.set_ylabel('Cost function')
+        ax_cst_fct.set_xticks(XTICKS)
+        # remove scientific notation from xaxis of ax_cst_fct
+        ticker = matplotlib.ticker.StrMethodFormatter('{x}')
+        ax_cst_fct.xaxis.set_minor_formatter(ticker)
+        ax_cst_fct.xaxis.set_major_formatter(ticker)
+        ax_cst_fct.set_yticks(1e1**np.arange(0, 9, 2))
+        ax_cst_fct.set_title(r'$M = '+str(M)+'$')
+        ax_cst_fct.grid(visible=True, which='major')
 
         # plot grad norm vs iterations
         for i, s in enumerate(solvers):
-            to_plot = res[i]['iterations']['gradnorm']
-            plt.loglog(np.arange(1, len(to_plot) + 1), to_plot,
-                       label=s, marker='')
+            to_plot_y = res[i]['iterations']['gradnorm']
+            to_plot_x = np.arange(1, len(to_plot_y) + 1)
+            ax_grad_norm.plot(
+                to_plot_x, to_plot_y, label='plain '+s, marker='')
         for i, s in enumerate(solvers_IG):
-            to_plot = res_IG[i]['iterations']['gradnorm']
-            plt.loglog(np.arange(1, len(to_plot) + 1), to_plot,
-                       label=s+' IG', marker='')
-        plt.legend()
-        plt.xlabel('Iterations')
-        plt.ylabel('Gradient norm')
-        plt.grid(visible=False, which='both')
-        filename = 'gradnorm_M_' + str(M)
-        path_temp = os.path.join(folder, filename)
-        plt.savefig(path_temp)
-        tikzplotlib.save(path_temp + '.tex')
-        plt.close('all')
+            to_plot_y = res_IG[i]['iterations']['gradnorm']
+            to_plot_x = np.arange(1, len(to_plot_y) + 1)
+            ax_grad_norm.plot(
+                to_plot_x, to_plot_y, label='proposed algo.', marker='')
+        if k == 0:
+            ax_grad_norm.yaxis.set_label_coords(*YLABEL_COORDS)
+            ax_grad_norm.set_ylabel('Gradient norm')
+        ax_grad_norm.set_xticks(XTICKS)
+        ax_grad_norm.set_yticks(1e1**np.arange(-5, 8, 2))
+        ax_grad_norm.set_xlabel('Iterations')
+        ax_grad_norm.grid(visible=True, which='major')
+
+    filename = 'center_of_mass_cost_gradnorm_vs_iterations_.pdf'
+    path_temp = os.path.join(folder, filename)
+    plt.savefig(path_temp, bbox_inches='tight')
+    plt.close('all')
 
 
 if __name__ == '__main__':
