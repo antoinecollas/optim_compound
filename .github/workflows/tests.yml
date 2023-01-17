@@ -20,6 +20,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Install tex
+      run: |
+        sudo apt-get install texlive-latex-extra texlive-fonts-recommended dvipng cm-super
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
