@@ -325,6 +325,7 @@ def main(
 
     path_temp = os.path.join(folder, 'N_MSE.pdf')
     plt.savefig(path_temp, bbox_inches='tight')
+    plt.close()
 
 
 if __name__ == '__main__':
