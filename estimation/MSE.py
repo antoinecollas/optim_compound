@@ -332,7 +332,7 @@ if __name__ == '__main__':
     n_MC = 2000
     p = 10
     nu = 0.1
-    list_n_samples = np.geomspace(2*p, 100*p, num=10, dtype=int)
+    list_n_samples = np.geomspace(1.5*p, 100*p, num=10, dtype=int)
     iter_max = 500
     min_grad_norm = 1e-5
     min_step_size = 1e-10
