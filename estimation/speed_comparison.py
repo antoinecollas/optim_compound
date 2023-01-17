@@ -100,7 +100,7 @@ def main(
         gs = fig.add_gridspec(2, len(reg_betas), hspace=0.15, wspace=0.1)
         axes_cst_fct, axes_grad_norm = gs.subplots(sharex='col', sharey='row')
         YLABEL_COORDS = (-0.3, 0.5)
-        XTICKS = [10, 100, 1000]
+        XTICKS = [1, 10, 100, 1000]
 
         for k, (ax_cst_fct, ax_grad_norm, reg_beta) in enumerate(
                 zip(axes_cst_fct, axes_grad_norm, reg_betas)):
@@ -141,6 +141,10 @@ def main(
                 ax_cst_fct.yaxis.set_label_coords(*YLABEL_COORDS)
                 ax_cst_fct.set_ylabel('Regularized NLL')
             ax_cst_fct.set_xticks(XTICKS)
+            # remove scientific notation from xaxis of ax_cst_fct
+            ticker = matplotlib.ticker.StrMethodFormatter('{x}')
+            ax_cst_fct.xaxis.set_minor_formatter(ticker)
+            ax_cst_fct.xaxis.set_major_formatter(ticker)
             # remove scientific notation from yaxis of ax_cst_fct
             ticker = matplotlib.ticker.StrMethodFormatter('{x:.0f}')
             ax_cst_fct.yaxis.set_minor_formatter(ticker)

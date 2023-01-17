@@ -272,11 +272,10 @@ def main(
     tex_lib = r'\usepackage{amsmath} \usepackage{amsfonts}'
     plt.rcParams.update({
             "text.usetex": True,
-            # "font.family": "Helvetica",
+            "font.family": "Helvetica",
             'text.latex.preamble': tex_lib
     })
-    fig = plt.figure(figsize=(4, 3.6))
-    # fig = plt.figure(figsize=(4, 4.5))
+    fig = plt.figure(figsize=(3, 4.5))
     gs = fig.add_gridspec(2, 1, hspace=0.15)
     axes = gs.subplots(sharex='col')
     # log scale
@@ -284,7 +283,7 @@ def main(
     axes[1].set_xscale('log')
     axes[0].set_yscale('log')
     axes[1].set_yscale('log')
-    YLABEL_COORDS = (-0.15, 0.5)
+    YLABEL_COORDS = (-0.2, 0.5)
     XTICKS = [np.min(list_n_samples), 100, np.max(list_n_samples)]
 
     # plot MSE of location estimation
