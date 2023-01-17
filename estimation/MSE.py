@@ -19,7 +19,6 @@ from pyCovariance.generation_data import\
         generate_textures_gamma_dist,\
         sample_compound_distribution
 from pymanopt.manifolds import ComplexEuclidean, HermitianPositiveDefinite
-import tikzplotlib
 from tqdm import tqdm
 
 
@@ -176,8 +175,6 @@ def main(
     n_jobs,
     verbose=True
 ):
-    matplotlib.use('Agg')
-
     if verbose:
         print('\n###########################################################')
         print('############## MSE versus the number of data ##############')
@@ -211,8 +208,6 @@ def main(
 
     features_list = [
         Gaussian(scatter_use_SPD_dist),
-        # Tyler_known_location(mu=None, iter_max=iter_max,
-        #                      scatter_use_SPD_dist=scatter_use_SPD_dist),
         Tyler_known_location(mu=mu, iter_max=iter_max,
                              scatter_use_SPD_dist=scatter_use_SPD_dist),
         Tyler_unknown_location(iter_max=iter_max,
@@ -227,6 +222,24 @@ def main(
             min_step_size=min_step_size,
             scatter_use_SPD_dist=scatter_use_SPD_dist
         ) for s in solvers_IG
+    ]
+    labels = [
+        [
+            r'$\boldsymbol{\mu}^{\textup{G}}$',
+            r'$\boldsymbol{\Sigma}^{\textup{G}}$'
+        ],
+        [
+            r'$\boldsymbol{\mu}^{\textup{Ty}, \mu}$',
+            r'$\boldsymbol{\Sigma}^{\textup{Ty}, \mu}$'
+        ],
+        [
+            r'$\boldsymbol{\mu}^{\textup{Ty}}$',
+            r'$\boldsymbol{\Sigma}^{\textup{Ty}}$'
+        ],
+        [
+            r'$\boldsymbol{\mu}^{\textup{IG}}$',
+            r'$\boldsymbol{\Sigma}^{\textup{IG}}$'
+        ],
     ]
 
     n_distances = 4
@@ -252,36 +265,67 @@ def main(
             verbose=False
         )
 
+    # prepare plot
+    # two lines for location and scatter matrix
+    # one column per reg_beta
+    # import latex packages amsmath and amsfonts into matplotlib
+    tex_lib = r'\usepackage{amsmath} \usepackage{amsfonts}'
+    plt.rcParams.update({
+            "text.usetex": True,
+            # "font.family": "Helvetica",
+            'text.latex.preamble': tex_lib
+    })
+    fig = plt.figure(figsize=(4, 3.6))
+    # fig = plt.figure(figsize=(4, 4.5))
+    gs = fig.add_gridspec(2, 1, hspace=0.15)
+    axes = gs.subplots(sharex='col')
+    # log scale
+    axes[0].set_xscale('log')
+    axes[1].set_xscale('log')
+    axes[0].set_yscale('log')
+    axes[1].set_yscale('log')
+    YLABEL_COORDS = (-0.15, 0.5)
+    XTICKS = [np.min(list_n_samples), 100, np.max(list_n_samples)]
+
     # plot MSE of location estimation
-    plt.figure()
     for i, f in enumerate(features_list):
-        plt.loglog(list_n_samples, mean_errors[i][1],
-                   label=str(f(1, 1)), marker='+')
-    plt.legend()
-    plt.xlabel('N')
-    plt.ylabel('MSE - location')
-    plt.grid(visible=True, which='both')
-    path_temp = os.path.join(folder, 'N_MSE_mu')
-    plt.savefig(path_temp)
-    tikzplotlib.save(path_temp + '.tex')
-    plt.close('all')
+        # remove label of Tyler known location
+        if i == 1:
+            label = None
+        else:
+            label = labels[i][0]
+        axes[0].plot(
+            list_n_samples, mean_errors[i][1], label=label, marker='')
+    axes[0].legend(fontsize=6)
+    axes[0].set_xticks(XTICKS)
+    axes[0].yaxis.set_label_coords(*YLABEL_COORDS)
+    ylabel = r'$\mathbb{E}\left[|| \hat{\boldsymbol{\mu}}'
+    ylabel += r'- \boldsymbol{\mu} ||_2^2\right]$'
+    axes[0].set_ylabel(ylabel)
+    axes[0].grid(visible=True, which='major')
 
     # plot MSE of scatter matrix estimation
-    plt.figure()
     for i, f in enumerate(features_list):
-        plt.loglog(list_n_samples, mean_errors[i][2],
-                   label=str(f(1, 1)), marker='+')
-    plt.legend()
-    plt.xlabel('N')
+        axes[1].plot(
+            list_n_samples, mean_errors[i][2], label=labels[i][1], marker='')
+    axes[1].legend(fontsize=6, loc='upper right')
+    axes[1].set_xlabel('$n$')
+    axes[1].set_xticks(XTICKS)
+    ticker = matplotlib.ticker.StrMethodFormatter('{x}')
+    axes[1].xaxis.set_major_formatter(ticker)
+    axes[1].yaxis.set_label_coords(*YLABEL_COORDS)
     if scatter_use_SPD_dist:
-        plt.ylabel('MSE (Riemannian) - scatter matrix')
+        ylabel = r'$\mathbb{E}\left[d_{S_p^{++}}^2\left('
+        ylabel += r'Q(\hat{\boldsymbol{\Sigma}}), Q(\boldsymbol{\Sigma})'
+        ylabel += r'\right)\right]$'
     else:
-        plt.ylabel('MSE (Euclidean) - scatter matrix')
-    plt.grid(visible=True, which='both')
-    path_temp = os.path.join(folder, 'N_MSE_scatter')
-    plt.savefig(path_temp)
-    tikzplotlib.save(path_temp + '.tex')
-    plt.close('all')
+        ylabel = r'$\mathbb{E}\left[||Q(\hat{\boldsymbol{\Sigma}})'
+        ylabel += r'- Q(\boldsymbol{\Sigma})||_F^2\right]$'
+    axes[1].set_ylabel(ylabel)
+    axes[1].grid(visible=True, which='major')
+
+    path_temp = os.path.join(folder, 'N_MSE.pdf')
+    plt.savefig(path_temp, bbox_inches='tight')
 
 
 if __name__ == '__main__':
