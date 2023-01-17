@@ -275,7 +275,7 @@ def main(
             "font.family": "Helvetica",
             'text.latex.preamble': tex_lib
     })
-    fig = plt.figure(figsize=(3, 4.5))
+    fig = plt.figure(figsize=(2.5, 2.5*1.5))
     gs = fig.add_gridspec(2, 1, hspace=0.15)
     axes = gs.subplots(sharex='col')
     # log scale
@@ -283,7 +283,7 @@ def main(
     axes[1].set_xscale('log')
     axes[0].set_yscale('log')
     axes[1].set_yscale('log')
-    YLABEL_COORDS = (-0.2, 0.5)
+    YLABEL_COORDS = (-0.25, 0.5)
     XTICKS = [np.min(list_n_samples), 100, np.max(list_n_samples)]
 
     # plot MSE of location estimation
@@ -298,8 +298,8 @@ def main(
     axes[0].legend(fontsize=6)
     axes[0].set_xticks(XTICKS)
     axes[0].yaxis.set_label_coords(*YLABEL_COORDS)
-    ylabel = r'$\mathbb{E}\left[|| \hat{\boldsymbol{\mu}}'
-    ylabel += r'- \boldsymbol{\mu} ||_2^2\right]$'
+    ylabel = r'$\mathbb{E}\Big[|| \hat{\boldsymbol{\mu}}'
+    ylabel += r'- \boldsymbol{\mu} ||_2^2\Big]$'
     axes[0].set_ylabel(ylabel)
     axes[0].grid(visible=True, which='major')
 
@@ -314,12 +314,12 @@ def main(
     axes[1].xaxis.set_major_formatter(ticker)
     axes[1].yaxis.set_label_coords(*YLABEL_COORDS)
     if scatter_use_SPD_dist:
-        ylabel = r'$\mathbb{E}\left[d_{S_p^{++}}^2\left('
+        ylabel = r'$\mathbb{E}\Big[d_{S_p^{++}}^2\left('
         ylabel += r'Q(\hat{\boldsymbol{\Sigma}}), Q(\boldsymbol{\Sigma})'
-        ylabel += r'\right)\right]$'
+        ylabel += r'\right)\Big]$'
     else:
-        ylabel = r'$\mathbb{E}\left[||Q(\hat{\boldsymbol{\Sigma}})'
-        ylabel += r'- Q(\boldsymbol{\Sigma})||_F^2\right]$'
+        ylabel = r'$\mathbb{E}\Big[||Q(\hat{\boldsymbol{\Sigma}})'
+        ylabel += r'- Q(\boldsymbol{\Sigma})||_F^2\Big]$'
     axes[1].set_ylabel(ylabel)
     axes[1].grid(visible=True, which='major')
 
