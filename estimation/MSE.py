@@ -241,6 +241,7 @@ def main(
             r'$\boldsymbol{\Sigma}^{\textup{IG}}$'
         ],
     ]
+    markers = ['o', 's', 'v', 'D']
 
     n_distances = 4
     shape = (len(features_list), n_distances, len(list_n_samples))
@@ -294,7 +295,12 @@ def main(
         else:
             label = labels[i][0]
         axes[0].plot(
-            list_n_samples, mean_errors[i][1], label=label, marker='')
+            list_n_samples,
+            mean_errors[i][1],
+            label=label,
+            marker=markers[i],
+            markersize=4-0.5*i,
+        )
     axes[0].legend(fontsize=6)
     axes[0].set_xticks(XTICKS)
     axes[0].yaxis.set_label_coords(*YLABEL_COORDS)
@@ -306,7 +312,12 @@ def main(
     # plot MSE of scatter matrix estimation
     for i, f in enumerate(features_list):
         axes[1].plot(
-            list_n_samples, mean_errors[i][2], label=labels[i][1], marker='')
+            list_n_samples,
+            mean_errors[i][2],
+            label=labels[i][1],
+            marker=markers[i],
+            markersize=4-0.5*i
+        )
     axes[1].legend(fontsize=6, loc='upper right')
     axes[1].set_xlabel('$n$')
     axes[1].set_xticks(XTICKS)
@@ -332,7 +343,7 @@ if __name__ == '__main__':
     n_MC = 2000
     p = 10
     nu = 0.1
-    list_n_samples = np.geomspace(1.5*p, 100*p, num=10, dtype=int)
+    list_n_samples = np.geomspace(2*p, 100*p, num=10, dtype=int)
     iter_max = 500
     min_grad_norm = 1e-5
     min_step_size = 1e-10
